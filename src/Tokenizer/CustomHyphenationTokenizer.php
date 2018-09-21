@@ -36,7 +36,8 @@ namespace Org\Heigl\Hyphenator\Tokenizer;
 use Org\Heigl\Hyphenator\Options;
 
 /**
- * Use Punktuation to split any input into tokens
+ * Use custom character to split a word into tokens manually or forbid
+ * tokenization by prefixing a word with specific character.
  *
  * @category   Hyphenation
  * @package    Org_Heigl_Hyphenator
@@ -59,8 +60,6 @@ class CustomHyphenationTokenizer implements Tokenizer
     }
 
     /**
-     * Split the given input into tokens using punktuation marks as splitter
-     *
      * The input can be a string or a tokenRegistry. If the input is a
      * TokenRegistry, each item will be tokenized.
      *
@@ -96,10 +95,8 @@ class CustomHyphenationTokenizer implements Tokenizer
     }
 
     /**
-     * Split the given string into tokens using whitespace.
-     *
-     * Each whitespace is placed in a WhitespaceToken and everything else is
-     * placed in a WordToken-Object
+     * Splits words by "noHyphenateString" and "customHyphen" to prevent further
+     * automatic tokenization for them.
      *
      * @param \string $input The String to tokenize
      *
@@ -107,29 +104,45 @@ class CustomHyphenationTokenizer implements Tokenizer
      */
     private function tokenize($input)
     {
-        $tokens = [];
+        $noHyphenateString = $this->options->getNoHyphenateString();
+        $hasNoHyphenateString = ! empty($noHyphenateString);
+        $customHyphen = $this->options->getCustomHyphen();
+        $hasCustomHyphen = ! empty($customHyphen);
+        $regexParts = [];
 
-        $splits = preg_split(sprintf(
-            '/((?:(?<=\W)%1$s|\b\w+%2$s)\w+?\b)/u',
-            $this->options->getNoHyphenateString(),
-            $this->options->getCustomHyphen()
-        ), $input, -1, PREG_SPLIT_DELIM_CAPTURE);
+        if (! $hasNoHyphenateString && ! $hasCustomHyphen) {
+            // Nothing to do here
+            return [new WordToken($input)];
+        }
+
+        if ($hasNoHyphenateString) {
+            $regexParts[] = '(?<=\W)' . preg_quote($noHyphenateString, '/');
+        }
+
+        if ($hasCustomHyphen) {
+            $regexParts[] = '\b\w+' . preg_quote($customHyphen, '/');
+        }
+
+        $pattern = sprintf('/((?:%s)\w+?\b)/u', implode('|', $regexParts));
+        $splits = preg_split($pattern, $input, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $tokens = [];
         foreach ($splits as $split) {
-            if ('' == $split) {
+            if ('' === $split) {
                 continue;
             }
-            if (0 === mb_strpos($split, $this->options->getNoHyphenateString())) {
+
+            if ($hasNoHyphenateString && 0 === mb_strpos($split, $noHyphenateString)) {
                 $tokens[] = new ExcludedWordToken(str_replace(
-                    $this->options->getNoHyphenateString(),
+                    $noHyphenateString,
                     '',
                     $split
                 ));
                 continue;
             }
 
-            if (false !== mb_strpos($split, $this->options->getCustomHyphen())) {
+            if ($hasCustomHyphen && false !== mb_strpos($split, $customHyphen)) {
                 $tokens[] = new ExcludedWordToken(str_replace(
-                    $this->options->getCustomHyphen(),
+                    $customHyphen,
                     $this->options->getHyphen(),
                     $split
                 ));
