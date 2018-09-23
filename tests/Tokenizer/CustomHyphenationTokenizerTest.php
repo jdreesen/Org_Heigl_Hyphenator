@@ -56,7 +56,6 @@ class CustomHyphenationTokenizerTest extends TestCase
         $options->shouldReceive('getCustomHyphen')->andReturn('--');
         $options->shouldReceive('getHyphen')->andReturn('^^');
 
-
         $tReg = new t\TokenRegistry();
         $tReg->add(new t\WordToken('Das ist '))
              ->add(new t\ExcludedWordToken('nicht'))
@@ -66,6 +65,53 @@ class CustomHyphenationTokenizerTest extends TestCase
 
         $tokenizer = new t\CustomHyphenationTokenizer($options);
         $registry = $tokenizer->run('Das ist ==nicht getrennt und das hat eine kunden--spezifische Trennung!');
+        $this->assertEquals($tReg, $registry);
+    }
+
+    public function testTokenizingStringWithOnlyNoHyphenateStringOptionConfigured()
+    {
+        $options = M::mock(Options::class);
+        $options->shouldReceive('getNoHyphenateString')->andReturn('==');
+        $options->shouldReceive('getCustomHyphen')->andReturn('');
+
+        $tReg = new t\TokenRegistry();
+        $tReg->add(new t\WordToken('Das ist '))
+             ->add(new t\ExcludedWordToken('nicht'))
+             ->add(new t\WordToken(' getrennt!'));
+
+        $tokenizer = new t\CustomHyphenationTokenizer($options);
+        $registry = $tokenizer->run('Das ist ==nicht getrennt!');
+        $this->assertEquals($tReg, $registry);
+    }
+
+    public function testTokenizingStringWithOnlyCustomHyphenOptionConfigured()
+    {
+        $options = M::mock(Options::class);
+        $options->shouldReceive('getNoHyphenateString')->andReturn('');
+        $options->shouldReceive('getCustomHyphen')->andReturn('--');
+        $options->shouldReceive('getHyphen')->andReturn('^^');
+
+        $tReg = new t\TokenRegistry();
+        $tReg->add(new t\WordToken('Das hat eine '))
+            ->add(new t\ExcludedWordToken('kunden^^spezifische'))
+            ->add(new t\WordToken(' Trennung!'));
+
+        $tokenizer = new t\CustomHyphenationTokenizer($options);
+        $registry = $tokenizer->run('Das hat eine kunden--spezifische Trennung!');
+        $this->assertEquals($tReg, $registry);
+    }
+
+    public function testTokenizingWithoutConfiguredOptions()
+    {
+        $options = M::mock(Options::class);
+        $options->shouldReceive('getNoHyphenateString')->andReturn('');
+        $options->shouldReceive('getCustomHyphen')->andReturn('');
+
+        $tReg = new t\TokenRegistry();
+        $tReg->add(new t\WordToken('Hier wird nichts getan.'));
+
+        $tokenizer = new t\CustomHyphenationTokenizer($options);
+        $registry = $tokenizer->run('Hier wird nichts getan.');
         $this->assertEquals($tReg, $registry);
     }
 }
