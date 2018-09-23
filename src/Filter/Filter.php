@@ -100,7 +100,14 @@ abstract class Filter
      *
      * @return mixed
      */
-    abstract protected function doConcatenate(t\TokenRegistry $tokens);
+    protected function doConcatenate(t\TokenRegistry $tokens) {
+        $string = '';
+        foreach ($tokens as $token) {
+            $string .= $token->getFilteredContent();
+        }
+
+        return $string;
+    }
 
     /**
      * Take any input and eitehr pass it to the concatenate-method or return it.
