@@ -47,7 +47,7 @@ use PHPUnit\Framework\TestCase;
  */
 class HyphenatorFeatureTest extends TestCase
 {
-    
+
     /**
      * @dataProvider hyphenationOfSingleWordWithArrayOutputProvider
      */
@@ -61,7 +61,7 @@ class HyphenatorFeatureTest extends TestCase
           ->setWordMin(4)
           ->setFilters('NonStandard')
           ->setTokenizers('Whitespace, Punctuation');
-        
+
         $h = new h\Hyphenator();
         $h->setOptions($o);
         $this->assertEquals($expected, $h->hyphenate($word));
@@ -186,7 +186,7 @@ class HyphenatorFeatureTest extends TestCase
           ->setRightMin(2)
           ->setLeftMin(2)
           ->setWordMin(8)
-          ->setFilters('Simple,CustomMarkup')
+          ->setFilters('Simple')
           ->setTokenizers(['Whitespace', 'Punctuation']);
         $h = new h\Hyphenator();
         $h->setOptions($o);
@@ -206,7 +206,7 @@ class HyphenatorFeatureTest extends TestCase
           ->setRightMin(2)
           ->setLeftMin(2)
           ->setWordMin(8)
-          ->setFilters('Simple,CustomMarkup')
+          ->setFilters('Simple')
           ->setTokenizers(['Whitespace', 'Punctuation']);
         $h = new h\Hyphenator();
         $h->setOptions($o);

@@ -131,11 +131,11 @@ class HyphenatorTest extends TestCase
         $this->assertInstanceof('\Org\Heigl\Hyphenator\Filter\FilterRegistry', $h->getFilters());
         $this->assertEquals(1, $h->getFilters()->count());
         $this->assertSame($f, $h->getFilters()->getFilterWithKey(0));
-        $this->assertSame($h, $h->addFilter('CustomMarkup'));
+        $this->assertSame($h, $h->addFilter('NonStandard'));
         $this->assertInstanceof('\Org\Heigl\Hyphenator\Filter\FilterRegistry', $h->getFilters());
         $this->assertEquals(2, $h->getFilters()->count());
         $this->assertInstanceof(
-            '\Org\Heigl\Hyphenator\Filter\CustomMarkupFilter',
+            '\Org\Heigl\Hyphenator\Filter\NonStandardFilter',
             $h->getFilters()->getFilterWithKey(1)
         );
     }
